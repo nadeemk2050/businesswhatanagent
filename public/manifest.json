@@ -1,0 +1,21 @@
+{
+    "icons":  [
+                  {
+                      "type":  "image/png",
+                      "sizes":  "192x192",
+                      "src":  "/icon-192.png"
+                  },
+                  {
+                      "type":  "image/png",
+                      "sizes":  "512x512",
+                      "src":  "/icon-512.png"
+                  }
+              ],
+    "description":  "Meta WhatsApp Cloud AI Agent Admin Dashboard",
+    "background_color":  "#ffffff",
+    "theme_color":  "#25d366",
+    "name":  "Business WhatAnAgent",
+    "start_url":  "/admin.html",
+    "display":  "standalone",
+    "short_name":  "BizWhatAnAgent"
+}

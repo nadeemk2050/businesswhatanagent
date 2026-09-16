@@ -1,0 +1,26 @@
+{
+    "scripts":  {
+                    "build":  "echo \u0027No build step required - plain JavaScript project\u0027",
+                    "dev":  "nodemon index.js",
+                    "start":  "node index.js"
+                },
+    "description":  "Standalone Meta WhatsApp Cloud AI Agent for Al Saham Al Ahmar Metal Scrap TR",
+    "type":  "module",
+    "version":  "1.0.0",
+    "engines":  {
+                    "node":  "\u003e=18.0.0"
+                },
+    "name":  "business-whatsapp-agent",
+    "main":  "index.js",
+    "devDependencies":  {
+                            "nodemon":  "^3.1.4"
+                        },
+    "dependencies":  {
+                         "axios":  "^1.7.2",
+                         "firebase":  "^12.16.0",
+                         "openai":  "^6.46.0",
+                         "dotenv":  "^16.4.5",
+                         "@google/generative-ai":  "^0.11.0",
+                         "express":  "^4.19.2"
+                     }
+}

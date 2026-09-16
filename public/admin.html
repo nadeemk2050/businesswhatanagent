@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business WhatAnAgent - Meta AI Admin</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#00a884">
+    <link rel="apple-touch-icon" href="/icon-180.png">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    <style>
+        :root {
+            --primary: #00a884;
+            --primary-dark: #008069;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #111b21;
+            --text-muted: #667781;
+            --border: #e9edef;
+            --sidebar-width: 260px;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; }
+
+        /* Auth UI */
+        #authContainer { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .auth-card { background: var(--card-bg); padding: 36px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; }
+        .auth-card h2 { margin-top: 0; color: var(--primary-dark); }
+        .auth-card input { width: 100%; padding: 12px 14px; margin-bottom: 14px; border: 1px solid #d1d7db; border-radius: 8px; font-size: 14px; }
+        .auth-card button { width: 100%; padding: 12px; background-color: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; transition: 0.2s; }
+        .auth-card button:hover { background-color: var(--primary-dark); }
+        .auth-card .toggle-link { color: var(--primary-dark); cursor: pointer; font-size: 13px; text-decoration: underline; margin-top: 10px; display: inline-block; }
+        .error-msg { color: #d32f2f; font-size: 13px; margin-bottom: 10px; }
+
+        /* Main App */
+        #appContainer { display: none; }
+        .topbar { background: var(--card-bg); padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .topbar-left { display: flex; align-items: center; gap: 15px; }
+        .menu-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-main); padding: 4px; }
+        .brand-title { font-size: 17px; font-weight: 700; color: var(--primary-dark); display: flex; align-items: center; gap: 8px; }
+        .status-badge { background: #dcf8c6; color: #075e54; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+        .status-dot { width: 8px; height: 8px; background: #25d366; border-radius: 50%; }
+
+        /* Sidebar */
+        .sidebar { position: fixed; top: 0; left: -280px; width: var(--sidebar-width); height: 100%; background: var(--card-bg); box-shadow: 2px 0 10px rgba(0,0,0,0.1); transition: 0.3s; z-index: 1000; padding: 20px 0; display: flex; flex-direction: column; }
+        .sidebar.open { left: 0; }
+        .sidebar-header { padding: 0 20px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .sidebar-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); }
+        .menu-items { flex: 1; overflow-y: auto; padding-top: 10px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; font-weight: 600; font-size: 14px; cursor: pointer; color: var(--text-main); transition: 0.2s; border-left: 4px solid transparent; }
+        .menu-item:hover { background: #f5f6f6; }
+        .menu-item.active { background: #e8f5e9; color: var(--primary-dark); border-left-color: var(--primary); }
+        .menu-item.logout { color: #d32f2f; margin-top: auto; border-top: 1px solid var(--border); }
+
+        /* Layout */
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        .container.full-width { max-width: 1200px; margin: 15px auto; padding: 0 15px; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .card-title { font-size: 18px; font-weight: 700; margin-top: 0; margin-bottom: 16px; color: var(--text-main); display: flex; align-items: center; justify-content: space-between; }
+        
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-weight: 600; font-size: 13px; color: #3b4a54; margin-bottom: 6px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid #d1d7db; border-radius: 8px; font-size: 14px; font-family: inherit; }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 11px 22px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-secondary { background: #e0e0e0; color: #333; border: none; padding: 9px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
+
+        /* Live Chat */
+        .chat-layout { display: flex; height: calc(100vh - 120px); border: 1px solid #d1d7db; border-radius: 12px; overflow: hidden; background: #fff; }
+        .chat-contacts-col { width: 320px; border-right: 1px solid #e9edef; display: flex; flex-direction: column; background: #fff; }
+        .chat-contacts-search { padding: 12px; border-bottom: 1px solid #e9edef; background: #f0f2f5; }
+        .chat-contacts-search input { width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #d1d7db; font-size: 13px; }
+        .chat-contacts-list { flex: 1; overflow-y: auto; }
+        .chat-contact-item { padding: 12px 16px; border-bottom: 1px solid #f5f6f6; cursor: pointer; display: flex; flex-direction: column; gap: 4px; transition: 0.15s; }
+        .chat-contact-item:hover { background: #f5f6f6; }
+        .chat-contact-item.active { background: #ebebeb; }
+        .chat-contact-top { display: flex; justify-content: space-between; font-weight: 600; font-size: 14px; }
+        .chat-contact-lastmsg { font-size: 12px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .chat-conversation-col { flex: 1; display: flex; flex-direction: column; background: #efeae2; }
+        .chat-conv-header { padding: 10px 18px; background: #f0f2f5; border-bottom: 1px solid #d1d7db; display: flex; justify-content: space-between; align-items: center; }
+        .chat-conv-title { font-weight: 700; font-size: 15px; }
+        .chat-conv-body { flex: 1; padding: 18px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .chat-bubble { max-width: 68%; padding: 8px 14px; border-radius: 8px; font-size: 13.5px; line-height: 1.4; word-wrap: break-word; }
+        .chat-bubble.user { background: #fff; align-self: flex-start; border-top-left-radius: 0; box-shadow: 0 1px 1px rgba(0,0,0,0.06); }
+        .chat-bubble.bot { background: #d9fdd3; align-self: flex-end; border-top-right-radius: 0; box-shadow: 0 1px 1px rgba(0,0,0,0.06); }
+        .chat-bubble-time { font-size: 10.5px; color: #667781; text-align: right; margin-top: 3px; }
+        .chat-input-bar { padding: 10px 14px; background: #f0f2f5; border-top: 1px solid #d1d7db; display: flex; gap: 10px; }
+        .chat-input-bar input { flex: 1; padding: 10px 14px; border-radius: 20px; border: none; outline: none; font-size: 14px; }
+        .chat-input-bar button { background: var(--primary); color: white; border: none; border-radius: 20px; padding: 0 20px; font-weight: 600; cursor: pointer; }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: #f9fafa; font-weight: 600; color: #54656f; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-green { background: #e8f5e9; color: #2e7d32; }
+        .badge-orange { background: #fff3e0; color: #e65100; }
+
+        .toast { position: fixed; bottom: 25px; right: 25px; background: #323232; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 13px; opacity: 0; transform: translateY(20px); transition: 0.3s; z-index: 9999; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <!-- Auth View -->
+    <div id="authContainer">
+        <div class="auth-card">
+            <h2>⚡ Business WhatAnAgent</h2>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Official Meta WhatsApp Cloud AI Agent</p>
+            <div id="authError" class="error-msg"></div>
+            <input type="email" id="authEmail" placeholder="Admin Email" required>
+            <input type="password" id="authPassword" placeholder="Password" required>
+            <button id="authBtn" onclick="handleAuth()">Sign In</button>
+            <a class="toggle-link" id="authToggleLink" onclick="toggleAuthMode()">New admin? Create account</a>
+        </div>
+    </div>
+
+    <!-- Main View -->
+    <div id="appContainer">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+                <div class="brand-title">
+                    <span>⚡ Business WhatAnAgent</span>
+                </div>
+            </div>
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                <span>Meta Cloud API Online</span>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span style="font-weight:700; color: var(--primary-dark);">Menu</span>
+                <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+            </div>
+            <div class="menu-items">
+                <div class="menu-item active" onclick="showSection('knowledge')">🏠 Knowledge Base</div>
+                <div class="menu-item" onclick="showSection('chat')">💬 Live Chat</div>
+                <div class="menu-item" onclick="showSection('contacts')">📇 Contact Book</div>
+                <div class="menu-item" onclick="showSection('leads')">📈 Leads Book</div>
+                <div class="menu-item" onclick="showSection('env')">⚙️ Env Settings</div>
+                <div class="menu-item" onclick="showSection('profile')">👤 My Profile</div>
+                <div class="menu-item logout" onclick="handleLogout()">🚪 Logout</div>
+            </div>
+        </div>
+
+        <!-- 1. Knowledge Base -->
+        <div class="container" id="secKnowledge">
+            <div class="card">
+                <div class="card-title">
+                    <span>🏠 Business Knowledge Base (AI Instructions)</span>
+                    <button class="btn-primary" onclick="saveKnowledge()">💾 Save Knowledge</button>
+                </div>
+                <div class="form-group">
+                    <label>Company Profile & Description</label>
+                    <textarea id="kbCompanyProfile" placeholder="e.g. AL SAHAM AL AHMAR METAL SCRAP TR"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Timings & Operating Hours</label>
+                    <textarea id="kbTimings" placeholder="7 AM TO 12 PM then 3 pm to 7 pm, Saturday to Thursday"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Location & Branches</label>
+                    <textarea id="kbLocation" placeholder="SAJA IND AREA SHARJAH UAE branches = axiom polymer in ummalquwain 2 brandspoint llc 3 al qaryan industries in karachi pakistan"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Google Maps Location Link</label>
+                    <input type="text" id="kbMapsLink" placeholder="https://maps.google.com/?q=...">
+                </div>
+                <div class="form-group">
+                    <label>Scrap Products We Buy & Sell</label>
+                    <textarea id="kbProducts" placeholder="HDPE100 PIPES SCRAP, PVC PIPE SCRAP, PET SCRAP PC SCRAP ALUMINIUM ACSR SCRAP ALUIUM DROSS SCRAP"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Logistics & Transport</label>
+                    <textarea id="kbLogistics" placeholder="We offer LOCAL TRANSPORT AND ALSO PROVIDE SEA TRANSPORT"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Custom AI Rules</label>
+                    <textarea id="kbRules" placeholder="Always greet the customer politely. Do not provide prices unless explicitly asked."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Welcome & Onboarding Prompt</label>
+                    <textarea id="kbOnboarding" placeholder="Welcome the customer warmly to Al Saham Al Ahmar Metal Scrap TR..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Live Chat -->
+        <div class="container full-width" id="secChat" style="display:none;">
+            <div class="chat-layout">
+                <div class="chat-contacts-col">
+                    <div class="chat-contacts-search">
+                        <input type="text" id="chatSearchInput" placeholder="Search chats by phone or name..." oninput="filterChatContacts()">
+                    </div>
+                    <div class="chat-contacts-list" id="chatContactsList">
+                        <div style="padding:20px; text-align:center; color:var(--text-muted); font-size:13px;">Loading conversations...</div>
+                    </div>
+                </div>
+                <div class="chat-conversation-col">
+                    <div class="chat-conv-header" id="chatConvHeader" style="display:none;">
+                        <div>
+                            <div class="chat-conv-title" id="chatActiveName">-</div>
+                            <div style="font-size:11.5px; color:var(--text-muted);" id="chatActivePhone">-</div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <button class="btn-secondary" id="chatAiToggleBtn" onclick="toggleCurrentChatAI()">🤖 AI: Active</button>
+                        </div>
+                    </div>
+                    <div class="chat-conv-body" id="chatMessagesBody">
+                        <div style="margin:auto; text-align:center; color:var(--text-muted); font-size:14px;">Select a conversation from the left to view messages</div>
+                    </div>
+                    <div class="chat-input-bar" id="chatInputBar" style="display:none;">
+                        <input type="text" id="chatMsgInput" placeholder="Type a message to send via WhatsApp..." onkeydown="if(event.key==='Enter') sendManualReply()">
+                        <button onclick="sendManualReply()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Contact Book -->
+        <div class="container" id="secContacts" style="display:none;">
+            <div class="card">
+                <div class="card-title">
+                    <span>📇 Customer Contact Book</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Last Message</th>
+                                <th>AI Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contactBookTableBody">
+                            <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Loading contacts...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Leads Book -->
+        <div class="container" id="secLeads" style="display:none;">
+            <div class="card">
+                <div class="card-title">
+                    <span>📈 Scrap Inquiries & Leads Book</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Phone</th>
+                                <th>Material Interest</th>
+                                <th>Tonnage / Qty</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leadsTableBody">
+                            <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No leads captured yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Env Settings -->
+        <div class="container" id="secEnv" style="display:none;">
+            <div class="card">
+                <div class="card-title">
+                    <span>⚙️ Meta & AI Environment Settings</span>
+                    <button class="btn-primary" onclick="saveEnvSettings()">💾 Save Credentials</button>
+                </div>
+                
+                <div style="background:#e8f4fd; border:1px solid #b6d4fe; border-radius:8px; padding:12px 16px; margin-bottom:18px; font-size:13px; color:#084298;">
+                    <b>Webhook Callback URL for Meta Developer Portal:</b><br>
+                    <code id="webhookUrlDisplay" style="background:#fff; padding:3px 8px; border-radius:4px; font-weight:bold; display:inline-block; margin-top:5px;">https://your-service.onrender.com/webhook</code>
+                </div>
+
+                <div class="form-group">
+                    <label>Active AI Engine</label>
+                    <select id="envAiProvider">
+                        <option value="deepseek">DeepSeek AI (Fast & Cost Effective)</option>
+                        <option value="gemini">Google Gemini 2.5 Flash</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>DeepSeek API Key</label>
+                    <input type="password" id="envDeepseekKey" placeholder="sk-...">
+                </div>
+                <div class="form-group">
+                    <label>Google Gemini API Key</label>
+                    <input type="password" id="envGeminiKey" placeholder="AIzaSy...">
+                </div>
+                <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
+                <div class="form-group">
+                    <label>Meta WhatsApp Permanent Access Token</label>
+                    <textarea id="envWaToken" placeholder="EAA..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Meta Phone Number ID</label>
+                    <input type="text" id="envPhoneId" placeholder="1209839585553898">
+                </div>
+                <div class="form-group">
+                    <label>Webhook Verify Token</label>
+                    <input type="text" id="envVerifyToken" placeholder="my_whatsapp_agent_verify_token_2026">
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. My Profile -->
+        <div class="container" id="secProfile" style="display:none;">
+            <div class="card">
+                <div class="card-title">👤 Admin Profile</div>
+                <div class="form-group">
+                    <label>Logged in Email</label>
+                    <input type="text" id="profileEmail" readonly style="background:#f0f2f5;">
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="profileNewPass" placeholder="Enter new password to update">
+                </div>
+                <button class="btn-primary" onclick="updatePassword()">Update Password</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Saved!</div>
+
+    <!-- Firebase SDK Modules -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword as fbUpdatePassword } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBR4wTVSfzBEJtbkogCaVYj3lDMbIgWtAc",
+            authDomain: "businesswhatanagent.firebaseapp.com",
+            projectId: "businesswhatanagent",
+            storageBucket: "businesswhatanagent.firebasestorage.app",
+            messagingSenderId: "923437563558",
+            appId: "1:923437563558:web:efbcff305b81a1f2f27e67"
+        };
+
+        const fbApp = initializeApp(firebaseConfig);
+        const auth = getAuth(fbApp);
+
+        window.auth = auth;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+        window.signOut = signOut;
+        window.fbUpdatePassword = fbUpdatePassword;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('authContainer').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'block';
+                document.getElementById('profileEmail').value = user.email || '';
+                loadKnowledge();
+                loadContacts();
+                loadEnvSettings();
+                loadLeads();
+            } else {
+                document.getElementById('authContainer').style.display = 'flex';
+                document.getElementById('appContainer').style.display = 'none';
+            }
+        });
+    </script>
+
+    <script>
+        let isRegisterMode = false;
+        let allContacts = {};
+        let activeChatNumber = null;
+        let chatPollTimer = null;
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.container').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+
+            const secMap = {
+                'knowledge': 'secKnowledge',
+                'chat': 'secChat',
+                'contacts': 'secContacts',
+                'leads': 'secLeads',
+                'env': 'secEnv',
+                'profile': 'secProfile'
+            };
+
+            const secId = secMap[id];
+            if (secId && document.getElementById(secId)) {
+                document.getElementById(secId).style.display = 'block';
+            }
+            const activeMenuItem = Array.from(document.querySelectorAll('.menu-item')).find(el => el.getAttribute('onclick')?.includes(id));
+            if (activeMenuItem) activeMenuItem.classList.add('active');
+
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('open')) sidebar.classList.remove('open');
+
+            if (id === 'chat') {
+                loadContacts();
+            }
+        }
+
+        function toggleAuthMode() {
+            isRegisterMode = !isRegisterMode;
+            document.getElementById('authBtn').innerText = isRegisterMode ? 'Create Account' : 'Sign In';
+            document.getElementById('authToggleLink').innerText = isRegisterMode ? 'Already have an account? Sign in' : 'New admin? Create account';
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('authEmail').value.trim();
+            const pass = document.getElementById('authPassword').value.trim();
+            const errEl = document.getElementById('authError');
+            errEl.innerText = '';
+            if (!email || !pass) return errEl.innerText = 'Please enter email and password.';
+
+            try {
+                if (isRegisterMode) {
+                    await window.createUserWithEmailAndPassword(window.auth, email, pass);
+                } else {
+                    await window.signInWithEmailAndPassword(window.auth, email, pass);
+                }
+            } catch (err) {
+                errEl.innerText = err.message;
+            }
+        }
+
+        async function handleLogout() {
+            if (confirm('Are you sure you want to sign out?')) {
+                await window.signOut(window.auth);
+            }
+        }
+
+        async function updatePassword() {
+            const pass = document.getElementById('profileNewPass').value.trim();
+            if (!pass) return alert('Enter a new password');
+            try {
+                await window.fbUpdatePassword(window.auth.currentUser, pass);
+                showToast('Password updated successfully');
+                document.getElementById('profileNewPass').value = '';
+            } catch (e) {
+                alert('Error updating password: ' + e.message);
+            }
+        }
+
+        async function loadKnowledge() {
+            try {
+                const res = await fetch('/api/knowledge');
+                const data = await res.json();
+                document.getElementById('kbCompanyProfile').value = data.companyProfile || '';
+                document.getElementById('kbTimings').value = data.timings || '';
+                document.getElementById('kbLocation').value = data.locationAndBranches || '';
+                document.getElementById('kbMapsLink').value = data.googleMapsLink || '';
+                document.getElementById('kbProducts').value = data.products || '';
+                document.getElementById('kbLogistics').value = data.logistics || '';
+                document.getElementById('kbRules').value = data.customRules || '';
+                document.getElementById('kbOnboarding').value = data.onboardingPrompt || '';
+            } catch (e) {
+                console.warn('Error loading knowledge:', e);
+            }
+        }
+
+        async function saveKnowledge() {
+            const payload = {
+                companyProfile: document.getElementById('kbCompanyProfile').value,
+                timings: document.getElementById('kbTimings').value,
+                locationAndBranches: document.getElementById('kbLocation').value,
+                googleMapsLink: document.getElementById('kbMapsLink').value,
+                products: document.getElementById('kbProducts').value,
+                logistics: document.getElementById('kbLogistics').value,
+                customRules: document.getElementById('kbRules').value,
+                onboardingPrompt: document.getElementById('kbOnboarding').value
+            };
+            const res = await fetch('/api/knowledge', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) showToast('Knowledge Base saved!');
+        }
+
+        async function loadContacts() {
+            try {
+                const res = await fetch('/api/contacts');
+                allContacts = await res.json();
+                renderChatContactsList(allContacts);
+                renderContactBookTable(allContacts);
+            } catch (e) {
+                console.warn('Error loading contacts:', e);
+            }
+        }
+
+        function renderChatContactsList(contacts) {
+            const listEl = document.getElementById('chatContactsList');
+            const numbers = Object.keys(contacts);
+            if (numbers.length === 0) {
+                listEl.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-muted); font-size:13px;">No WhatsApp contacts yet.</div>';
+                return;
+            }
+            listEl.innerHTML = '';
+            numbers.forEach(num => {
+                const c = contacts[num];
+                const item = document.createElement('div');
+                item.className = 'chat-contact-item' + (activeChatNumber === num ? ' active' : '');
+                item.onclick = () => openChat(num, c.name || num);
+                item.innerHTML = `
+                    <div class="chat-contact-top">
+                        <span>` + (c.name || num) + `</span>
+                        <span style="font-size:11px; font-weight:normal; color:#8696a0;">` + (c.aiPaused ? '⏸️ Human' : '🤖 AI') + `</span>
+                    </div>
+                    <div class="chat-contact-lastmsg">` + (c.lastMessage || num) + `</div>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        function filterChatContacts() {
+            const q = document.getElementById('chatSearchInput').value.toLowerCase();
+            const filtered = {};
+            Object.keys(allContacts).forEach(num => {
+                const c = allContacts[num];
+                if (num.includes(q) || (c.name && c.name.toLowerCase().includes(q))) {
+                    filtered[num] = c;
+                }
+            });
+            renderChatContactsList(filtered);
+        }
+
+        async function openChat(num, name) {
+            activeChatNumber = num;
+            document.getElementById('chatActiveName').innerText = name;
+            document.getElementById('chatActivePhone').innerText = '+' + num;
+            document.getElementById('chatConvHeader').style.display = 'flex';
+            document.getElementById('chatInputBar').style.display = 'flex';
+
+            renderChatContactsList(allContacts);
+            await fetchMessages(num);
+
+            if (chatPollTimer) clearInterval(chatPollTimer);
+            chatPollTimer = setInterval(() => { if (activeChatNumber === num) fetchMessages(num); }, 5000);
+        }
+
+        async function fetchMessages(num) {
+            try {
+                const res = await fetch('/api/chats/' + num + '/messages');
+                const msgs = await res.json();
+                const body = document.getElementById('chatMessagesBody');
+                body.innerHTML = '';
+                msgs.forEach(m => {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'chat-bubble ' + (m.sender === 'user' ? 'user' : 'bot');
+                    const time = m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                    bubble.innerHTML = '<div>' + m.text + '</div><div class="chat-bubble-time">' + time + '</div>';
+                    body.appendChild(bubble);
+                });
+                body.scrollTop = body.scrollHeight;
+
+                const contact = allContacts[num] || {};
+                const aiBtn = document.getElementById('chatAiToggleBtn');
+                aiBtn.innerText = contact.aiPaused ? '⏸️ AI Paused (Click to Resume)' : '🤖 AI Active (Click to Pause)';
+                aiBtn.style.background = contact.aiPaused ? '#ffecb3' : '#e8f5e9';
+            } catch (e) {
+                console.warn('Error fetching messages:', e);
+            }
+        }
+
+        async function sendManualReply() {
+            const input = document.getElementById('chatMsgInput');
+            const text = input.value.trim();
+            if (!text || !activeChatNumber) return;
+            input.value = '';
+
+            const res = await fetch('/api/chats/reply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ number: activeChatNumber, text: text })
+            });
+            if (res.ok) fetchMessages(activeChatNumber);
+        }
+
+        async function toggleCurrentChatAI() {
+            if (!activeChatNumber) return;
+            const currentStatus = allContacts[activeChatNumber]?.aiPaused === true;
+            const res = await fetch('/api/chats/toggleAI', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ number: activeChatNumber, aiPaused: !currentStatus })
+            });
+            if (res.ok) {
+                allContacts[activeChatNumber].aiPaused = !currentStatus;
+                fetchMessages(activeChatNumber);
+                renderChatContactsList(allContacts);
+            }
+        }
+
+        function renderContactBookTable(contacts) {
+            const tbody = document.getElementById('contactBookTableBody');
+            const numbers = Object.keys(contacts);
+            if (numbers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No contacts saved yet.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = '';
+            numbers.forEach(num => {
+                const c = contacts[num];
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td><b>' + (c.name || 'Customer') + '</b></td>' +
+                    '<td>+' + num + '</td>' +
+                    '<td>' + (c.lastMessage || '-') + '</td>' +
+                    '<td><span class="badge ' + (c.aiPaused ? 'badge-orange' : 'badge-green') + '">' + (c.aiPaused ? 'Paused' : 'Active') + '</span></td>' +
+                    '<td><button class="btn-secondary" onclick="openChat(\'' + num + '\', \'' + (c.name || num) + '\'); showSection(\'chat\');">💬 Chat</button></td>';
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function loadLeads() {
+            try {
+                const res = await fetch('/api/leads');
+                const leads = await res.json();
+                const tbody = document.getElementById('leadsTableBody');
+                if (leads.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No leads captured yet.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = '';
+                leads.forEach(l => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = '<td><b>' + (l.name || 'Client') + '</b></td>' +
+                        '<td>+' + l.phone + '</td>' +
+                        '<td>' + (l.materialInterest || 'Scrap Inquiry') + '</td>' +
+                        '<td>' + (l.estimatedTonnage || '-') + '</td>' +
+                        '<td><span class="badge badge-orange">' + (l.status || 'New') + '</span></td>' +
+                        '<td>' + (l.notes || '-') + '</td>';
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                console.warn('Error loading leads:', e);
+            }
+        }
+
+        async function loadEnvSettings() {
+            try {
+                const res = await fetch('/api/env');
+                const data = await res.json();
+                document.getElementById('envAiProvider').value = data.ACTIVE_AI_PROVIDER || 'deepseek';
+                document.getElementById('envDeepseekKey').value = data.DEEPSEEK_API_KEY || '';
+                document.getElementById('envGeminiKey').value = data.GEMINI_API_KEY || '';
+                document.getElementById('envWaToken').value = data.WHATSAPP_TOKEN || '';
+                document.getElementById('envPhoneId').value = data.PHONE_NUMBER_ID || '';
+                document.getElementById('envVerifyToken').value = data.VERIFY_TOKEN || '';
+                document.getElementById('webhookUrlDisplay').innerText = window.location.origin + '/webhook';
+            } catch (e) {
+                console.warn('Error loading settings:', e);
+            }
+        }
+
+        async function saveEnvSettings() {
+            const payload = {
+                ACTIVE_AI_PROVIDER: document.getElementById('envAiProvider').value,
+                DEEPSEEK_API_KEY: document.getElementById('envDeepseekKey').value.trim(),
+                GEMINI_API_KEY: document.getElementById('envGeminiKey').value.trim(),
+                WHATSAPP_TOKEN: document.getElementById('envWaToken').value.trim(),
+                PHONE_NUMBER_ID: document.getElementById('envPhoneId').value.trim(),
+                VERIFY_TOKEN: document.getElementById('envVerifyToken').value.trim()
+            };
+            const res = await fetch('/api/env', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) showToast('Environment Settings saved to database!');
+        }
+    </script>
+</body>
+</html>
