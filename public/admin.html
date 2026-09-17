@@ -98,6 +98,22 @@
         .badge-green { background: #e8f5e9; color: #2e7d32; }
         .badge-orange { background: #fff3e0; color: #e65100; }
 
+        /* Knowledge Base Enhancements */
+        .btn-ai-suggest { background: #ffffff; color: #16a34a; border: 1.5px solid #22c55e; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .btn-ai-suggest:hover { background: #f0fdf4; border-color: #15803d; color: #15803d; }
+        .btn-green-wide { width: 100%; background-color: #22c55e; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14.5px; cursor: pointer; transition: 0.2s; }
+        .btn-green-wide:hover { background-color: #16a34a; }
+        .ai-dropdown-container { display: flex; align-items: center; gap: 8px; background: #f0f2f5; padding: 6px 14px; border-radius: 20px; border: 1px solid #d1d7db; }
+        .ai-select-power { border: none; background: transparent; font-weight: 700; font-size: 12.5px; color: #008069; cursor: pointer; outline: none; }
+        .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3col { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 12px; }
+        @media (max-width: 768px) {
+            .grid-2col, .grid-3col { grid-template-columns: 1fr; }
+        }
+        .faq-item-card { background: #ffffff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 14px 18px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 14px; margin-top: 14px; }
+        .product-item-card { background: #ffffff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between; }
+
         .toast { position: fixed; bottom: 25px; right: 25px; background: #323232; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 13px; opacity: 0; transform: translateY(20px); transition: 0.3s; z-index: 9999; }
         .toast.show { opacity: 1; transform: translateY(0); }
     </style>
@@ -127,9 +143,19 @@
                     <span>⚡ Business WhatAnAgent</span>
                 </div>
             </div>
-            <div class="status-badge">
-                <span class="status-dot"></span>
-                <span>Meta Cloud API Online</span>
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <!-- AI Engine Power Dropdown -->
+                <div class="ai-dropdown-container">
+                    <span style="font-size:12px; font-weight:700; color:var(--text-main);">🤖 Active AI:</span>
+                    <select id="topbarAiProvider" onchange="quickSwitchAiProvider(this.value)" class="ai-select-power" title="Select Active AI Engine">
+                        <option value="deepseek">1. DeepSeek V4.1 Flash</option>
+                        <option value="gemini">2. Google Gemini 2.5 Flash</option>
+                    </select>
+                </div>
+                <div class="status-badge">
+                    <span class="status-dot"></span>
+                    <span>Meta Cloud API Online</span>
+                </div>
             </div>
         </div>
 
@@ -152,10 +178,100 @@
 
         <!-- 1. Knowledge Base -->
         <div class="container" id="secKnowledge">
+
+            <!-- Card 1: AI Persona & Fallback Logic -->
+            <div class="card" style="border-top: 4px solid #22c55e;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <span style="font-size: 18px; font-weight: 700; color: #16a34a;">AI Persona & Fallback Logic</span>
+                    <button type="button" class="btn-ai-suggest" id="btnSuggestPersona" onclick="suggestPersonaAI()">💡 Suggest Settings with AI</button>
+                </div>
+                <div class="grid-2col">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Brand Voice / Tone</label>
+                        <select id="kbBrandVoice" style="padding: 10px 12px; font-weight: 500;">
+                            <option value="Friendly & Supportive (Uses Emojis)">Friendly & Supportive (Uses Emojis)</option>
+                            <option value="Professional & Formal (Concise)">Professional & Formal (Concise)</option>
+                            <option value="Sales-Focused & Persuasive">Sales-Focused & Persuasive</option>
+                            <option value="Technical & Material-Specific">Technical & Material-Specific</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>When AI Doesn't Know Answer (Fallback)</label>
+                        <select id="kbFallback" style="padding: 10px 12px; font-weight: 500;">
+                            <option value="Ask for email/number for follow-up">Ask for email/number for follow-up</option>
+                            <option value="Share Team Contacts: Nadeem (+971529244592), Farhan (+971554779240), Obaidullah (+971527455831)">Share Team Contacts: Nadeem (+971529244592), Farhan (+971554779240), Obaidullah (+971527455831)</option>
+                            <option value="Politely request customer to visit Saja yard">Politely request customer to visit Saja yard</option>
+                            <option value="Promise callback from sales manager within 30 mins">Promise callback from sales manager within 30 mins</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Q&A / FAQ Knowledge Manager -->
+            <div class="card" style="border-top: 4px solid #0ea5e9;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <span style="font-size: 18px; font-weight: 700; color: #111b21;">Q&A / FAQ Knowledge Manager</span>
+                    <button type="button" class="btn-ai-suggest" id="btnGenFaqs" onclick="autoGenerateFAQs()">💡 Auto-Generate 5 FAQs</button>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="faqInputQ" placeholder="Enter Question (e.g. Do you ship to Oman?)">
+                </div>
+                <div class="form-group">
+                    <textarea id="faqInputA" placeholder="Enter Answer (e.g. Yes, shipping to Oman takes 3 days.)" style="min-height: 80px;"></textarea>
+                </div>
+                <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                    <button type="button" id="btnAddFaq" class="btn-green-wide" onclick="saveFaqItem()">Add Q&A Pair</button>
+                    <button type="button" id="btnCancelFaq" class="btn-secondary" style="display:none;" onclick="cancelEditFaq()">Cancel</button>
+                </div>
+                <div id="faqListContainer"></div>
+            </div>
+
+            <!-- Card 3: Product & Inventory Catalog -->
+            <div class="card" style="border-top: 4px solid #f59e0b;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-size: 18px; font-weight: 700; color: #111b21;">Product & Inventory Catalog</span>
+                    <button type="button" class="btn-ai-suggest" id="btnSuggestProd" onclick="autoSuggestProduct()">💡 Auto-Suggest Product Details</button>
+                </div>
+                <p style="color: #667781; font-size: 13px; margin-top: 0; margin-bottom: 16px;">Add specific products, rates, quantities, and buying/selling capacities to feed the AI.</p>
+                
+                <div class="grid-3col" style="margin-bottom: 12px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <input type="text" id="prodInputName" placeholder="Product Name (e.g. Copper Wire Sc)">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <input type="text" id="prodInputQty" placeholder="Available Qty (e.g. 5,000 kg)">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <input type="text" id="prodInputRate" placeholder="Approx Rate (e.g. 7.2 USD/kg)">
+                    </div>
+                </div>
+
+                <div class="grid-2col" style="margin-bottom: 12px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <input type="text" id="prodInputBuyCap" placeholder="Buying Capacity (e.g. 20 Tons/mo)">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <input type="text" id="prodInputSellCap" placeholder="Selling Capacity (e.g. 10 Tons/mo)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <textarea id="prodInputComments" placeholder="Product Comments/Special Info to tell customers (e.g. Clean material, 99.9% purity, photos available)..." style="min-height: 75px;"></textarea>
+                </div>
+
+                <div style="display:flex; gap:10px; margin-bottom: 15px;">
+                    <button type="button" id="btnAddProd" class="btn-green-wide" onclick="saveProductItem()">Add Product to Catalog</button>
+                    <button type="button" id="btnCancelProd" class="btn-secondary" style="display:none;" onclick="cancelEditProduct()">Cancel</button>
+                </div>
+
+                <div class="product-grid" id="productListContainer"></div>
+            </div>
+
+            <!-- Card 4: Company Profile & Operating Details -->
             <div class="card">
                 <div class="card-title">
-                    <span>🏠 Business Knowledge Base (AI Instructions)</span>
-                    <button class="btn-primary" onclick="saveKnowledge()">💾 Save Knowledge</button>
+                    <span>🏢 Company Profile & Operating Guidelines</span>
+                    <button class="btn-primary" onclick="saveKnowledge()">💾 Save All Knowledge</button>
                 </div>
                 <div class="form-group">
                     <label>Company Profile & Description</label>
@@ -174,7 +290,7 @@
                     <input type="text" id="kbMapsLink" placeholder="https://maps.google.com/?q=...">
                 </div>
                 <div class="form-group">
-                    <label>Scrap Products We Buy & Sell</label>
+                    <label>Scrap Products Overview</label>
                     <textarea id="kbProducts" placeholder="HDPE100 PIPES SCRAP, PVC PIPE SCRAP, PET SCRAP PC SCRAP ALUMINIUM ACSR SCRAP ALUIUM DROSS SCRAP"></textarea>
                 </div>
                 <div class="form-group">
@@ -188,6 +304,9 @@
                 <div class="form-group">
                     <label>Welcome & Onboarding Prompt</label>
                     <textarea id="kbOnboarding" placeholder="Welcome the customer warmly to Al Saham Al Ahmar Metal Scrap TR..."></textarea>
+                </div>
+                <div style="text-align: right; margin-top: 15px;">
+                    <button class="btn-primary" onclick="saveKnowledge()" style="padding: 12px 28px; font-size: 15px;">💾 Save All Knowledge</button>
                 </div>
             </div>
         </div>
@@ -464,6 +583,382 @@
             }
         }
 
+        // --- Knowledge Base State (Persona, FAQs, Products) ---
+        const defaultFaqs = [
+            {
+                id: "faq_1",
+                question: ".when any body ask that do you buy scrap or any scrap name he mention we should answer that",
+                answer: "yes we are on mission to cleanthe world and make it green and recycle the waste to make the world breahtable for ever"
+            },
+            {
+                id: "faq_2",
+                question: "who will attend or meet in your company",
+                answer: "Nadeem (+971529244592), Farhan (+971554779240), Obaidullah (+971527455831) (give the names one by one and if contact numbers are requested, share them politely)"
+            },
+            {
+                id: "faq_3",
+                question: "UBC (Used Beverage Cans)",
+                answer: "Flattened, baled or briquetted aluminium used beverage cans. High demand for closed-loop recycling. but we usually dont deal in it ..."
+            }
+        ];
+
+        const defaultCatalog = [
+            {
+                id: "prod_1",
+                name: "IRON SCRAP HMS",
+                qty: "30 MTONS APPROX",
+                rate: "750 DHS LAST WEEK",
+                buyCap: "50 TONS",
+                sellCap: "50 TONS",
+                comments: "No comments"
+            },
+            {
+                id: "prod_2",
+                name: "HDPE 100 SCRAP",
+                qty: "10 TONS",
+                rate: "2000 -2100 PER TON",
+                buyCap: "100 TONS",
+                sellCap: "100 TONS",
+                comments: "WE CAN BUY HDPE100 PIPE SCRAP AND REGRIND AND GRANULES ALSO"
+            },
+            {
+                id: "prod_3",
+                name: "PVC PIPE SCRAP",
+                qty: "15 TONS",
+                rate: "2100 APPROX LAST WEEK PRICE",
+                buyCap: "100 TONS",
+                sellCap: "100 TONS",
+                comments: "Clean sorted PVC pipe regrind and baled scrap"
+            },
+            {
+                id: "prod_4",
+                name: "WINDOW PROFILE PVC PLASTIC",
+                qty: "5 TONS",
+                rate: "2100 LASDT WEEK APPROX",
+                buyCap: "50 TONS",
+                sellCap: "50 TONS",
+                comments: "Post-industrial window profile scrap, white clean grade"
+            }
+        ];
+
+        let currentFaqs = [];
+        let currentCatalog = [];
+        let editingFaqId = null;
+        let editingProdId = null;
+
+        // Quick AI Switcher (DeepSeek vs Gemini)
+        async function quickSwitchAiProvider(provider) {
+            try {
+                const res = await fetch('/api/set-ai-provider', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ provider })
+                });
+                if (res.ok) {
+                    document.getElementById('topbarAiProvider').value = provider;
+                    if (document.getElementById('envAiProvider')) {
+                        document.getElementById('envAiProvider').value = provider;
+                    }
+                    showToast('⚡ Active AI switched to: ' + (provider === 'deepseek' ? 'DeepSeek V4.1 Flash' : 'Google Gemini 2.5 Flash'));
+                }
+            } catch (e) {
+                console.error('Failed to switch AI provider:', e);
+            }
+        }
+
+        // --- FAQ Manager Logic ---
+        function renderFaqs() {
+            const container = document.getElementById('faqListContainer');
+            if (!container) return;
+            if (currentFaqs.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">No FAQs added yet. Click "Auto-Generate 5 FAQs" or add one above.</div>';
+                return;
+            }
+            container.innerHTML = '';
+            currentFaqs.forEach(faq => {
+                const card = document.createElement('div');
+                card.className = 'faq-item-card';
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 10px;">
+                        <div style="color: #16a34a; font-weight: 700; font-size: 14.5px; line-height: 1.4;">
+                            Q: ` + escapeHtml(faq.question) + `
+                        </div>
+                        <div style="display: flex; gap: 12px; white-space: nowrap; font-size: 13px;">
+                            <span style="color: #0284c7; cursor: pointer; font-weight: 600;" onclick="editFaq('` + faq.id + `')">✏️ Edit</span>
+                            <span style="color: #dc2626; cursor: pointer; font-weight: 600;" onclick="deleteFaq('` + faq.id + `')">❌ Delete</span>
+                        </div>
+                    </div>
+                    <div style="color: #374151; font-size: 13.5px; line-height: 1.5;">
+                        A: ` + escapeHtml(faq.answer) + `
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function saveFaqItem() {
+            const q = document.getElementById('faqInputQ').value.trim();
+            const a = document.getElementById('faqInputA').value.trim();
+            if (!q || !a) return alert('Please enter both question and answer.');
+
+            if (editingFaqId) {
+                const idx = currentFaqs.findIndex(f => f.id === editingFaqId);
+                if (idx !== -1) {
+                    currentFaqs[idx].question = q;
+                    currentFaqs[idx].answer = a;
+                }
+                cancelEditFaq();
+            } else {
+                currentFaqs.unshift({
+                    id: 'faq_' + Date.now(),
+                    question: q,
+                    answer: a
+                });
+                document.getElementById('faqInputQ').value = '';
+                document.getElementById('faqInputA').value = '';
+            }
+            renderFaqs();
+            saveKnowledgeSilent();
+        }
+
+        function editFaq(id) {
+            const faq = currentFaqs.find(f => f.id === id);
+            if (!faq) return;
+            editingFaqId = id;
+            document.getElementById('faqInputQ').value = faq.question;
+            document.getElementById('faqInputA').value = faq.answer;
+            document.getElementById('btnAddFaq').innerText = 'Update Q&A Pair';
+            document.getElementById('btnCancelFaq').style.display = 'inline-block';
+            document.getElementById('faqInputQ').focus();
+        }
+
+        function cancelEditFaq() {
+            editingFaqId = null;
+            document.getElementById('faqInputQ').value = '';
+            document.getElementById('faqInputA').value = '';
+            document.getElementById('btnAddFaq').innerText = 'Add Q&A Pair';
+            document.getElementById('btnCancelFaq').style.display = 'none';
+        }
+
+        function deleteFaq(id) {
+            if (!confirm('Are you sure you want to delete this FAQ?')) return;
+            currentFaqs = currentFaqs.filter(f => f.id !== id);
+            renderFaqs();
+            saveKnowledgeSilent();
+        }
+
+        async function autoGenerateFAQs() {
+            const btn = document.getElementById('btnGenFaqs');
+            const orig = btn.innerHTML;
+            btn.innerHTML = '⏳ Generating with AI...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/ai/generate-faqs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const newFaqs = await res.json();
+                if (Array.isArray(newFaqs) && newFaqs.length > 0) {
+                    newFaqs.forEach(f => {
+                        currentFaqs.unshift({
+                            id: 'faq_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                            question: f.question,
+                            answer: f.answer
+                        });
+                    });
+                    renderFaqs();
+                    saveKnowledgeSilent();
+                    showToast('💡 5 FAQs Generated & Added successfully!');
+                } else {
+                    alert('Could not generate FAQs at this time. Please check AI engine settings.');
+                }
+            } catch (e) {
+                alert('Error generating FAQs: ' + e.message);
+            } finally {
+                btn.innerHTML = orig;
+                btn.disabled = false;
+            }
+        }
+
+        // --- Product & Inventory Catalog Logic ---
+        function renderProducts() {
+            const container = document.getElementById('productListContainer');
+            if (!container) return;
+            if (currentCatalog.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">No products in catalog. Add your scrap materials above.</div>';
+                return;
+            }
+            container.innerHTML = '';
+            currentCatalog.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-item-card';
+                card.innerHTML = `
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <div style="font-weight: 700; color: #16a34a; font-size: 14.5px; display: flex; align-items: center; gap: 6px;">
+                                <span>📦</span> <span>` + escapeHtml(p.name) + `</span>
+                            </div>
+                            <div style="display: flex; gap: 12px; font-size: 13px;">
+                                <span style="color: #0284c7; cursor: pointer; font-weight: 600;" onclick="editProduct('` + p.id + `')">✏️ Edit</span>
+                                <span style="color: #dc2626; cursor: pointer; font-weight: 600;" onclick="deleteProduct('` + p.id + `')">❌ Delete</span>
+                            </div>
+                        </div>
+                        <div style="font-size: 12.5px; color: #1f2937; margin-bottom: 4px;">
+                            <b>Qty:</b> ` + escapeHtml(p.qty || '-') + ` | <b>Rate:</b> ` + escapeHtml(p.rate || '-') + `
+                        </div>
+                        <div style="font-size: 12.5px; color: #1f2937; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #e5e7eb;">
+                            <b>Buy Cap:</b> ` + escapeHtml(p.buyCap || '-') + ` | <b>Sell Cap:</b> ` + escapeHtml(p.sellCap || '-') + `
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; font-style: italic; color: #6b7280; line-height: 1.4;">
+                        "` + escapeHtml(p.comments || 'No comments') + `"
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function saveProductItem() {
+            const name = document.getElementById('prodInputName').value.trim();
+            const qty = document.getElementById('prodInputQty').value.trim();
+            const rate = document.getElementById('prodInputRate').value.trim();
+            const buyCap = document.getElementById('prodInputBuyCap').value.trim();
+            const sellCap = document.getElementById('prodInputSellCap').value.trim();
+            const comments = document.getElementById('prodInputComments').value.trim();
+
+            if (!name) return alert('Product Name is required.');
+
+            if (editingProdId) {
+                const idx = currentCatalog.findIndex(p => p.id === editingProdId);
+                if (idx !== -1) {
+                    currentCatalog[idx] = {
+                        id: editingProdId,
+                        name, qty, rate, buyCap, sellCap, comments
+                    };
+                }
+                cancelEditProduct();
+            } else {
+                currentCatalog.unshift({
+                    id: 'prod_' + Date.now(),
+                    name, qty, rate, buyCap, sellCap, comments
+                });
+                clearProductInputs();
+            }
+            renderProducts();
+            saveKnowledgeSilent();
+        }
+
+        function editProduct(id) {
+            const p = currentCatalog.find(item => item.id === id);
+            if (!p) return;
+            editingProdId = id;
+            document.getElementById('prodInputName').value = p.name || '';
+            document.getElementById('prodInputQty').value = p.qty || '';
+            document.getElementById('prodInputRate').value = p.rate || '';
+            document.getElementById('prodInputBuyCap').value = p.buyCap || '';
+            document.getElementById('prodInputSellCap').value = p.sellCap || '';
+            document.getElementById('prodInputComments').value = p.comments || '';
+            document.getElementById('btnAddProd').innerText = 'Update Product in Catalog';
+            document.getElementById('btnCancelProd').style.display = 'inline-block';
+            document.getElementById('prodInputName').focus();
+        }
+
+        function cancelEditProduct() {
+            editingProdId = null;
+            clearProductInputs();
+            document.getElementById('btnAddProd').innerText = 'Add Product to Catalog';
+            document.getElementById('btnCancelProd').style.display = 'none';
+        }
+
+        function clearProductInputs() {
+            document.getElementById('prodInputName').value = '';
+            document.getElementById('prodInputQty').value = '';
+            document.getElementById('prodInputRate').value = '';
+            document.getElementById('prodInputBuyCap').value = '';
+            document.getElementById('prodInputSellCap').value = '';
+            document.getElementById('prodInputComments').value = '';
+        }
+
+        function deleteProduct(id) {
+            if (!confirm('Are you sure you want to remove this product?')) return;
+            currentCatalog = currentCatalog.filter(p => p.id !== id);
+            renderProducts();
+            saveKnowledgeSilent();
+        }
+
+        async function autoSuggestProduct() {
+            const nameInput = document.getElementById('prodInputName');
+            let productName = nameInput.value.trim();
+            if (!productName) {
+                productName = prompt('Enter scrap material/product name to suggest details for (e.g. Copper Wire Scrap, Brass Honey Scrap, Aluminium Tense):', 'Copper Wire Scrap');
+                if (!productName) return;
+                nameInput.value = productName;
+            }
+
+            const btn = document.getElementById('btnSuggestProd');
+            const orig = btn.innerHTML;
+            btn.innerHTML = '⏳ Suggesting with AI...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/ai/suggest-product', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productName })
+                });
+                const s = await res.json();
+                if (s.availableQty) document.getElementById('prodInputQty').value = s.availableQty;
+                if (s.approxRate) document.getElementById('prodInputRate').value = s.approxRate;
+                if (s.buyCapacity) document.getElementById('prodInputBuyCap').value = s.buyCapacity;
+                if (s.sellCapacity) document.getElementById('prodInputSellCap').value = s.sellCapacity;
+                if (s.comments) document.getElementById('prodInputComments').value = s.comments;
+                showToast('💡 AI Product Details filled for ' + productName);
+            } catch (e) {
+                alert('Error suggesting product details: ' + e.message);
+            } finally {
+                btn.innerHTML = orig;
+                btn.disabled = false;
+            }
+        }
+
+        // --- AI Persona & Fallback Suggestion ---
+        async function suggestPersonaAI() {
+            const btn = document.getElementById('btnSuggestPersona');
+            const orig = btn.innerHTML;
+            btn.innerHTML = '⏳ Suggesting...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/ai/suggest-persona', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if (data.brandVoice) document.getElementById('kbBrandVoice').value = data.brandVoice;
+                if (data.fallbackLogic) document.getElementById('kbFallback').value = data.fallbackLogic;
+                saveKnowledgeSilent();
+                showToast('💡 AI Persona & Fallback Logic updated!');
+            } catch (e) {
+                alert('Error suggesting persona: ' + e.message);
+            } finally {
+                btn.innerHTML = orig;
+                btn.disabled = false;
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         async function loadKnowledge() {
             try {
                 const res = await fetch('/api/knowledge');
@@ -476,13 +971,45 @@
                 document.getElementById('kbLogistics').value = data.logistics || '';
                 document.getElementById('kbRules').value = data.customRules || '';
                 document.getElementById('kbOnboarding').value = data.onboardingPrompt || '';
+
+                // Persona
+                if (data.aiPersona) {
+                    if (data.aiPersona.brandVoice) document.getElementById('kbBrandVoice').value = data.aiPersona.brandVoice;
+                    if (data.aiPersona.fallbackLogic) document.getElementById('kbFallback').value = data.aiPersona.fallbackLogic;
+                }
+
+                // FAQs
+                if (Array.isArray(data.faqs) && data.faqs.length > 0) {
+                    currentFaqs = data.faqs;
+                } else {
+                    currentFaqs = [...defaultFaqs];
+                }
+                renderFaqs();
+
+                // Products
+                if (Array.isArray(data.catalog) && data.catalog.length > 0) {
+                    currentCatalog = data.catalog;
+                } else {
+                    currentCatalog = [...defaultCatalog];
+                }
+                renderProducts();
+
             } catch (e) {
                 console.warn('Error loading knowledge:', e);
             }
         }
 
-        async function saveKnowledge() {
-            const payload = {
+        async function saveKnowledgeSilent() {
+            const payload = buildKnowledgePayload();
+            await fetch('/api/knowledge', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        function buildKnowledgePayload() {
+            return {
                 companyProfile: document.getElementById('kbCompanyProfile').value,
                 timings: document.getElementById('kbTimings').value,
                 locationAndBranches: document.getElementById('kbLocation').value,
@@ -490,14 +1017,24 @@
                 products: document.getElementById('kbProducts').value,
                 logistics: document.getElementById('kbLogistics').value,
                 customRules: document.getElementById('kbRules').value,
-                onboardingPrompt: document.getElementById('kbOnboarding').value
+                onboardingPrompt: document.getElementById('kbOnboarding').value,
+                aiPersona: {
+                    brandVoice: document.getElementById('kbBrandVoice').value,
+                    fallbackLogic: document.getElementById('kbFallback').value
+                },
+                faqs: currentFaqs,
+                catalog: currentCatalog
             };
+        }
+
+        async function saveKnowledge() {
+            const payload = buildKnowledgePayload();
             const res = await fetch('/api/knowledge', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            if (res.ok) showToast('Knowledge Base saved!');
+            if (res.ok) showToast('Knowledge Base & Catalog saved!');
         }
 
         async function loadContacts() {
@@ -571,7 +1108,9 @@
                     const bubble = document.createElement('div');
                     bubble.className = 'chat-bubble ' + (m.sender === 'user' ? 'user' : 'bot');
                     const time = m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                    bubble.innerHTML = '<div>' + m.text + '</div><div class="chat-bubble-time">' + time + '</div>';
+                    const isAudio = m.isVoiceNote || (m.text && m.text.includes('🎤'));
+                    const audioBadge = isAudio ? '<div style="margin-bottom:4px;"><span style="display:inline-flex; align-items:center; gap:4px; background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;">🎤 Voice Note</span></div>' : '';
+                    bubble.innerHTML = audioBadge + '<div style="white-space:pre-wrap;">' + escapeHtml(m.text) + '</div><div class="chat-bubble-time">' + time + '</div>';
                     body.appendChild(bubble);
                 });
                 body.scrollTop = body.scrollHeight;
@@ -663,7 +1202,11 @@
             try {
                 const res = await fetch('/api/env');
                 const data = await res.json();
-                document.getElementById('envAiProvider').value = data.ACTIVE_AI_PROVIDER || 'deepseek';
+                const prov = data.ACTIVE_AI_PROVIDER || 'deepseek';
+                document.getElementById('envAiProvider').value = prov;
+                if (document.getElementById('topbarAiProvider')) {
+                    document.getElementById('topbarAiProvider').value = prov;
+                }
                 document.getElementById('envDeepseekKey').value = data.DEEPSEEK_API_KEY || '';
                 document.getElementById('envGeminiKey').value = data.GEMINI_API_KEY || '';
                 document.getElementById('envWaToken').value = data.WHATSAPP_TOKEN || '';
@@ -676,8 +1219,9 @@
         }
 
         async function saveEnvSettings() {
+            const selectedProv = document.getElementById('envAiProvider').value;
             const payload = {
-                ACTIVE_AI_PROVIDER: document.getElementById('envAiProvider').value,
+                ACTIVE_AI_PROVIDER: selectedProv,
                 DEEPSEEK_API_KEY: document.getElementById('envDeepseekKey').value.trim(),
                 GEMINI_API_KEY: document.getElementById('envGeminiKey').value.trim(),
                 WHATSAPP_TOKEN: document.getElementById('envWaToken').value.trim(),
@@ -689,7 +1233,12 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            if (res.ok) showToast('Environment Settings saved to database!');
+            if (res.ok) {
+                if (document.getElementById('topbarAiProvider')) {
+                    document.getElementById('topbarAiProvider').value = selectedProv;
+                }
+                showToast('Environment Settings saved to database!');
+            }
         }
     </script>
 </body>
